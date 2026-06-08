@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>割り勘・傾斜精算ツール「精算くん」| 無料で簡単計算</title>
+<meta name="description" content="傾斜割り勘に対応した無料の精算ツール。メンバーと支払いを入力するだけで最適な精算方法を自動計算。飲み会・旅行・イベントの割り勘に。">
+<meta name="keywords" content="割り勘,精算,傾斜割り勘,割り勘計算,無料,飲み会,旅行,精算ツール">
+<meta name="author" content="精算くん">
+<meta name="robots" content="index, follow">
+
+<!-- OGP（SNSでシェアされたときの表示） -->
+<meta property="og:title" content="割り勘・傾斜精算ツール「精算くん」">
+<meta property="og:description" content="傾斜割り勘に対応した無料の精算ツール。飲み会・旅行の割り勘を最少回数のやり取りで解決。">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+
+<!-- 構造化データ（Googleがサイト内容を理解しやすくなる） -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "精算くん",
+  "description": "傾斜割り勘に対応した無料の精算ツール",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "JPY"
+  }
+}
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#7F77DD;--accent-light:#EEEDFE;--accent-mid:#534AB7;
+  --bg:#F7F6FB;--surface:#fff;--border:rgba(0,0,0,0.08);
+  --text:#1a1a2e;--text2:#6b6b8a;--text3:#a0a0b8;
+  --danger:#e24b4a;--success:#1D9E75;
+  --radius:14px;--radius-sm:8px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:0.5px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-icon{width:32px;height:32px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700}
+.nav-logo-text{font-size:16px;font-weight:700;color:var(--text)}
+.nav-logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.nav-pills{display:flex;gap:3px;background:var(--bg);border-radius:10px;padding:3px}
+.nav-pill{padding:5px 16px;border-radius:7px;border:none;background:transparent;font-size:13px;color:var(--text2);cursor:pointer;font-weight:400}
+.nav-pill.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 0 0 0.5px var(--border)}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:200px;background:var(--surface);border-right:0.5px solid var(--border);padding:1.25rem .875rem;display:flex;flex-direction:column;gap:3px;flex-shrink:0;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;border:none;background:transparent;font-size:13px;color:var(--text2);cursor:pointer;width:100%;text-align:left}
+.sb-item:hover{background:var(--bg)}
+.sb-item.active{background:var(--accent-light);color:var(--accent-mid);font-weight:600}
+.sb-icon{font-size:15px;width:18px;text-align:center}
+.sb-divider{height:0.5px;background:var(--border);margin:6px 0}
+.sb-label{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:3px 10px}
+
+.main{flex:1;overflow-y:auto;padding:1.75rem}
+.content{max-width:680px;margin:0 auto}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-label{font-size:10px;color:var(--text2);margin-bottom:4px}
+.stat-value{font-size:22px;font-weight:700}
+
+/* CARD */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:8px}
+.card-accent{border-color:var(--accent)}
+.section-label{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+
+/* FORM */
+input,select{font-size:13px;padding:8px 11px;border:0.5px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);outline:none;width:100%;font-family:inherit;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--accent);background:var(--surface)}
+input[type="number"]{-moz-appearance:textfield}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
+.btn{padding:7px 14px;border-radius:7px;border:0.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.btn-primary:hover{background:var(--accent-mid)}
+.btn-danger{color:var(--danger);border-color:rgba(226,75,74,.3)}
+.btn-danger:hover{background:rgba(226,75,74,.06)}
+.btn-sm{padding:3px 9px;font-size:11px}
+.btn-full{width:100%}
+.row{display:flex;gap:7px}.row input,.row select{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+
+/* AVATAR */
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent-mid);flex-shrink:0}
+.avatar-sm{width:22px;height:22px;font-size:9px}
+
+/* PARTICIPANT */
+.part-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;border:0.5px solid var(--border);margin-bottom:4px;cursor:pointer}
+.part-row.checked{background:var(--accent-light);border-color:var(--accent)}
+.custom-check{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.checked .custom-check{background:var(--accent);border-color:var(--accent)}
+.check-mark{color:#fff;font-size:9px;display:none}
+.checked .check-mark{display:block}
+
+/* PILL */
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);margin:2px}
+
+/* SETTLE */
+.settle-row{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:12px;margin-bottom:7px}
+.settle-num{width:22px;height:22px;border-radius:6px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent-mid);flex-shrink:0}
+.settle-amount{font-size:16px;font-weight:700;color:var(--accent-mid)}
+
+/* SUMMARY */
+.summary-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:5px;align-items:center}
+.summary-row{border-top:0.5px solid var(--border);padding:7px 0}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 0;color:var(--text3);font-size:13px}
+.empty-icon{font-size:28px;margin-bottom:8px}
+
+/* OPT */
+.opt-grid{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:7px;align-items:center}
+.info-banner{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent-mid);line-height:1.6}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;background:var(--accent-light);color:var(--accent-mid);border:0.5px solid var(--accent)}
+
+.page{display:none}.page.active{display:block}
+.total-warn{font-size:10px;color:var(--danger)}.total-ok{font-size:10px;color:var(--success)}
+.diff-pos{color:var(--success);font-weight:600}.diff-neg{color:var(--danger);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">¥</div>
+    <span class="nav-logo-text">精算くん</span>
+    <span class="nav-logo-sub">傾斜対応の精算ツール</span>
+  </div>
+  <div class="nav-pills">
+    <button class="nav-pill active" onclick="switchPage('warikan')">割り勘</button>
+    <button class="nav-pill" onclick="switchPage('optimize')">最適化</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR warikan -->
+  <aside class="sidebar" id="sidebar-warikan">
+    <div class="sb-label">メニュー</div>
+    <button class="sb-item active" onclick="switchTab('members')"><span class="sb-icon">👥</span>メンバー</button>
+    <button class="sb-item" onclick="switchTab('payments')"><span class="sb-icon">💸</span>支払い</button>
+    <button class="sb-item" onclick="switchTab('result')"><span class="sb-icon">✅</span>精算結果</button>
+    <div class="sb-divider"></div>
+    <div class="sb-label">イベント</div>
+    <div style="padding:4px 10px;font-size:13px;font-weight:600;color:var(--text)" id="sb-event-name">—</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">概要</div>
+    <div style="padding:6px 10px"><div style="font-size:11px;color:var(--text2);margin-bottom:3px">合計金額</div><div style="font-size:20px;font-weight:700" id="sb-total">¥0</div></div>
+    <div style="padding:4px 10px"><div style="font-size:11px;color:var(--text2);margin-bottom:2px">メンバー</div><div style="font-size:15px;font-weight:600" id="sb-members">0人</div></div>
+    <div style="padding:4px 10px"><div style="font-size:11px;color:var(--text2);margin-bottom:2px">精算件数</div><div style="font-size:15px;font-weight:600" id="sb-settle">0件</div></div>
+  </aside>
+
+  <!-- SIDEBAR optimize -->
+  <aside class="sidebar" id="sidebar-optimize" style="display:none">
+    <div class="sb-label">使い方</div>
+    <div style="padding:6px 10px;font-size:12px;color:var(--text2);line-height:1.7">各自の支払う額・受け取る額を入力すると最少回数のやり取りを計算します。</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">結果</div>
+    <div style="padding:6px 10px"><div style="font-size:11px;color:var(--text2);margin-bottom:2px">やり取り件数</div><div style="font-size:20px;font-weight:700" id="sb-opt-count">—</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <!-- WARIKAN PAGE -->
+      <div id="page-warikan" class="page active">
+        <div id="tab-members" class="page active">
+          <div class="card card-accent" style="margin-bottom:14px">
+            <div class="section-label">割り勘の名前</div>
+            <input type="text" id="event-name" placeholder="例：沖縄旅行、忘年会" oninput="updateEventName()">
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="stat-label">👥 メンバー</div><div class="stat-value" id="stat-members">0人</div></div>
+            <div class="stat"><div class="stat-label">💸 支払い</div><div class="stat-value" id="stat-payments">0件</div></div>
+            <div class="stat"><div class="stat-label">💴 合計</div><div class="stat-value" id="stat-total">¥0</div></div>
+          </div>
+          <div class="card card-accent">
+            <div class="section-label">メンバーを追加</div>
+            <div class="row">
+              <input type="text" id="new-name" placeholder="名前を入力" onkeydown="if(event.key==='Enter')addMember()">
+              <button class="btn btn-primary" onclick="addMember()" style="white-space:nowrap">追加</button>
+            </div>
+          </div>
+          <div id="member-list"></div>
+        </div>
+
+        <div id="tab-payments" class="page">
+          <div class="card card-accent" style="margin-bottom:12px">
+            <div class="section-label">支払いを追加</div>
+            <div class="grid2" style="margin-bottom:7px">
+              <select id="pay-payer"><option value="">支払った人</option></select>
+              <input type="number" id="pay-amount" placeholder="金額 (¥)">
+            </div>
+            <input type="text" id="pay-desc" placeholder="内容（例：ランチ）" style="margin-bottom:10px">
+            <div class="section-label">メンバーと負担割合</div>
+            <div id="pay-participants"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <span id="pct-status" class="total-ok"></span>
+              <button class="btn btn-sm" onclick="equalizePct()">均等割り</button>
+            </div>
+            <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="addPayment()">追加する</button>
+          </div>
+          <div id="payment-list"></div>
+        </div>
+
+        <div id="tab-result" class="page">
+          <div class="card" id="summary-card" style="margin-bottom:14px;display:none">
+            <div class="section-label">個人別サマリー</div>
+            <div class="summary-grid" style="margin-bottom:7px">
+              <span style="font-size:9px;color:var(--text3)">名前</span>
+              <span style="font-size:9px;color:var(--text3)">支払った額</span>
+              <span style="font-size:9px;color:var(--text3)">負担額</span>
+              <span style="font-size:9px;color:var(--text3)">差引</span>
+            </div>
+            <div id="summary-rows"></div>
+          </div>
+          <div class="section-label">精算方法</div>
+          <div id="settlement-list"></div>
+        </div>
+      </div>
+
+      <!-- OPTIMIZE PAGE -->
+      <div id="page-optimize" class="page">
+        <div class="info-banner">各自の<strong>支払う額</strong>と<strong>受け取る額</strong>を入力すると、最少回数で清算する方法を計算します。</div>
+        <div class="card">
+          <div class="opt-grid" style="margin-bottom:8px">
+            <span style="font-size:10px;color:var(--text3)">名前</span>
+            <span style="font-size:10px;color:var(--text3)">支払う額</span>
+            <span style="font-size:10px;color:var(--text3)">受け取る額</span>
+            <span></span>
+          </div>
+          <div id="opt-rows"></div>
+          <button class="btn" style="margin-top:7px;font-size:12px" onclick="addOptRow()">+ 人を追加</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 9px">
+          <div class="section-label" style="margin:0">最適な精算方法</div>
+          <span class="badge" id="opt-badge" style="display:none"></span>
+        </div>
+        <div id="opt-result"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+var members=[];
+var payments=[];
+var tempPcts={};
+var editingId=null;
+var optRows=[{id:uid(),name:'',paid:'',received:''},{id:uid(),name:'',paid:'',received:''}];
+var currentPage='warikan';
+var currentTab='members';
+var eventName='';
+
+function uid(){return Math.random().toString(36).slice(2,8);}
+
+function updateEventName(){
+  eventName=document.getElementById('event-name').value.trim();
+  var sbEl=document.getElementById('sb-event-name');
+  if(sbEl) sbEl.textContent=eventName||'—';
+}
+
+function switchPage(p){
+  currentPage=p;
+  var pages=['warikan','optimize'];
+  for(var i=0;i<pages.length;i++){
+    var x=pages[i];
+    document.getElementById('page-'+x).classList.toggle('active',x===p);
+    var sb=document.getElementById('sidebar-'+x);
+    sb.style.display=x===p?'flex':'none';
+    if(x===p)sb.style.flexDirection='column';
+  }
+  var pills=document.querySelectorAll('.nav-pill');
+  pills[0].classList.toggle('active',p==='warikan');
+  pills[1].classList.toggle('active',p==='optimize');
+  if(p==='optimize'){renderOptRows();renderOptResult();}
+}
+
+function switchTab(t){
+  currentTab=t;
+  var tabs=['members','payments','result'];
+  for(var i=0;i<tabs.length;i++)
+    document.getElementById('tab-'+tabs[i]).classList.toggle('active',tabs[i]===t);
+  var items=document.querySelectorAll('.sb-item');
+  for(var i=0;i<items.length;i++) items[i].classList.toggle('active',tabs[i]===t);
+  if(t==='payments'){renderPayParticipants();renderPaymentList();}
+  if(t==='result') renderResult();
+  if(t==='members') renderMemberList();
+}
+
+function addMember(){
+  var inp=document.getElementById('new-name');
+  var n=inp.value.trim();if(!n)return;
+  var id=uid();
+  members.push({id:id,name:n});
+  tempPcts[id]={checked:true,pct:0};
+  equalizePctAll();
+  inp.value='';
+  renderAll();
+}
+
+function removeMember(id){
+  members=members.filter(function(m){return m.id!==id;});
+  payments=payments.filter(function(p){return p.payerId!==id;}).map(function(p){
+    return{id:p.id,payerId:p.payerId,amount:p.amount,desc:p.desc,participants:p.participants.filter(function(x){return x.id!==id;})};
+  });
+  delete tempPcts[id];
+  equalizePctAll();
+  renderAll();
+}
+
+function renderMemberList(){
+  var el=document.getElementById('member-list');
+  if(members.length===0){el.innerHTML='<div class="empty"><div class="empty-icon">👤</div>メンバーを追加してください</div>';return;}
+  var html='';
+  for(var i=0;i<members.length;i++){
+    var m=members[i];
+    html+='<div class="card" style="display:flex;align-items:center;gap:10px">'+
+      '<div class="avatar">'+m.name.slice(0,2)+'</div>'+
+      '<span style="flex:1;font-size:14px;font-weight:600">'+m.name+'</span>'+
+      '<button class="btn btn-sm btn-danger" onclick="removeMember(\''+m.id+'\')">削除</button>'+
+      '</div>';
+  }
+  el.innerHTML=html;
+}
+
+function equalizePctAll(){
+  var ch=members.filter(function(m){return tempPcts[m.id]&&tempPcts[m.id].checked!==false;});
+  var eq=ch.length>0?parseFloat((100/ch.length).toFixed(1)):0;
+  for(var i=0;i<ch.length;i++){
+    var pct=i===ch.length-1?parseFloat((100-eq*(ch.length-1)).toFixed(1)):eq;
+    tempPcts[ch[i].id]={checked:true,pct:pct};
+  }
+}
+
+function equalizePct(){
+  var ch=members.filter(function(m){return tempPcts[m.id]&&tempPcts[m.id].checked;});
+  var eq=ch.length>0?parseFloat((100/ch.length).toFixed(1)):0;
+  for(var i=0;i<ch.length;i++){
+    var pct=i===ch.length-1?parseFloat((100-eq*(ch.length-1)).toFixed(1)):eq;
+    tempPcts[ch[i].id].pct=pct;
+  }
+  renderPayParticipants();
+}
+
+function togglePart(id){
+  if(!tempPcts[id])tempPcts[id]={checked:false,pct:0};
+  tempPcts[id].checked=!tempPcts[id].checked;
+  renderPayParticipants();
+}
+
+function setPct(id,v){
+  if(!tempPcts[id])tempPcts[id]={checked:true,pct:0};
+  tempPcts[id].pct=parseFloat(v)||0;
+  updatePctStatus();
+}
+
+function updatePctStatus(){
+  var ch=members.filter(function(m){return tempPcts[m.id]&&tempPcts[m.id].checked;});
+  var total=0;
+  for(var i=0;i<ch.length;i++) total+=parseFloat(tempPcts[ch[i].id].pct)||0;
+  var el=document.getElementById('pct-status');
+  if(ch.length===0){el.textContent='';return;}
+  if(Math.abs(total-100)>0.5){el.textContent='合計 '+total.toFixed(1)+'%';el.className='total-warn';}
+  else{el.textContent='✓ 合計 100%';el.className='total-ok';}
+}
+
+function renderPayParticipants(){
+  var el=document.getElementById('pay-participants');
+  if(members.length===0){el.innerHTML='<div style="font-size:11px;color:var(--text3)">先にメンバーを追加してください</div>';return;}
+  var html='';
+  for(var i=0;i<members.length;i++){
+    var m=members[i];
+    var p=tempPcts[m.id]||{checked:false,pct:0};
+    html+='<div class="part-row '+(p.checked?'checked':'')+'" onclick="togglePart(\''+m.id+'\')">'+
+      '<div class="custom-check"><span class="check-mark">✓</span></div>'+
+      '<span style="flex:1;font-size:12px">'+m.name+'</span>';
+    if(p.checked){
+      html+='<input type="number" value="'+p.pct+'" min="0" max="100" step="0.1"'+
+        ' onclick="event.stopPropagation()" oninput="setPct(\''+m.id+'\',this.value)"'+
+        ' style="width:58px;text-align:right;padding:2px 5px;font-size:11px">'+
+        '<span style="font-size:11px;color:var(--text2)">%</span>';
+    }
+    html+='</div>';
+  }
+  el.innerHTML=html;
+  updatePctStatus();
+}
+
+function addPayment(){
+  var payer=document.getElementById('pay-payer').value;
+  var amt=parseFloat(document.getElementById('pay-amount').value);
+  var desc=document.getElementById('pay-desc').value.trim()||'支払い';
+  if(!payer||isNaN(amt)||amt<=0)return;
+  var included=[];
+  for(var i=0;i<members.length;i++){
+    var m=members[i];
+    if(tempPcts[m.id]&&tempPcts[m.id].checked) included.push({id:m.id,pct:tempPcts[m.id].pct||0});
+  }
+  if(included.length===0)return;
+  payments.push({id:uid(),payerId:payer,amount:amt,desc:desc,participants:included});
+  document.getElementById('pay-amount').value='';
+  document.getElementById('pay-desc').value='';
+  renderPaymentList();updateStats();
+}
+
+function removePayment(id){
+  payments=payments.filter(function(p){return p.id!==id;});
+  renderPaymentList();updateStats();
+}
+
+function renderPaymentList(){
+  var el=document.getElementById('payment-list');
+  var sel=document.getElementById('pay-payer');
+  var opts='<option value="">支払った人</option>';
+  for(var i=0;i<members.length;i++) opts+='<option value="'+members[i].id+'">'+members[i].name+'</option>';
+  sel.innerHTML=opts;
+  if(payments.length===0){el.innerHTML='<div class="empty"><div class="empty-icon">💸</div>支払いを追加してください</div>';return;}
+  var html='';
+  for(var i=0;i<payments.length;i++){
+    var p=payments[i];
+    if(editingId===p.id){html+=renderEditForm(p);continue;}
+    var payer=null;
+    for(var j=0;j<members.length;j++){if(members[j].id===p.payerId){payer=members[j];break;}}
+    var tw=0;for(var j=0;j<p.participants.length;j++) tw+=p.participants[j].pct;
+    var pills='';
+    for(var j=0;j<p.participants.length;j++){
+      var x=p.participants[j];var name='';
+      for(var k=0;k<members.length;k++){if(members[k].id===x.id){name=members[k].name;break;}}
+      var share=tw>0?Math.round((x.pct/tw)*p.amount):0;
+      pills+='<span class="pill">'+name+' · '+x.pct+'% · ¥'+share.toLocaleString()+'</span>';
+    }
+    html+='<div class="card">'+
+      '<div style="display:flex;align-items:flex-start;margin-bottom:8px">'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+p.desc+'</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-top:2px">'+(payer?payer.name:'不明')+' が支払い</div></div>'+
+        '<span style="font-size:16px;font-weight:700;color:var(--accent-mid);margin-right:8px">¥'+p.amount.toLocaleString()+'</span>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button class="btn btn-sm" onclick="startEdit(\''+p.id+'\')">編集</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="removePayment(\''+p.id+'\')">削除</button>'+
+        '</div></div><div>'+pills+'</div></div>';
+  }
+  el.innerHTML=html;
+}
+
+function renderEditForm(p){
+  var memberOpts='';
+  for(var i=0;i<members.length;i++) memberOpts+='<option value="'+members[i].id+'"'+(members[i].id===p.payerId?' selected':'')+'>'+members[i].name+'</option>';
+  var partRows='';
+  for(var i=0;i<members.length;i++){
+    var m=members[i];var inc=null;
+    for(var j=0;j<p.participants.length;j++){if(p.participants[j].id===m.id){inc=p.participants[j];break;}}
+    var checked=!!inc;
+    partRows+='<div class="part-row '+(checked?'checked':'')+'" onclick="toggleEditPart(\''+p.id+'\',\''+m.id+'\')">'+
+      '<div class="custom-check"><span class="check-mark">✓</span></div>'+
+      '<span style="flex:1;font-size:12px">'+m.name+'</span>';
+    if(checked) partRows+='<input type="number" value="'+inc.pct+'" min="0" max="100" step="0.1"'+
+      ' onclick="event.stopPropagation()" oninput="setEditPct(\''+p.id+'\',\''+m.id+'\',this.value)"'+
+      ' style="width:58px;text-align:right;padding:2px 5px;font-size:11px">&nbsp;<span style="font-size:11px;color:var(--text2)">%</span>';
+    partRows+='</div>';
+  }
+  return '<div class="card" style="border-color:var(--accent);margin-bottom:8px">'+
+    '<div style="font-size:12px;font-weight:700;color:var(--accent-mid);margin-bottom:10px">支払いを編集</div>'+
+    '<div class="grid2" style="margin-bottom:7px"><select id="edit-payer-'+p.id+'">'+memberOpts+'</select>'+
+    '<input type="number" id="edit-amt-'+p.id+'" value="'+p.amount+'"></div>'+
+    '<input type="text" id="edit-desc-'+p.id+'" value="'+p.desc+'" style="margin-bottom:10px">'+
+    '<div>'+partRows+'</div>'+
+    '<div style="display:flex;gap:7px;margin-top:10px">'+
+      '<button class="btn btn-primary" style="flex:1" onclick="saveEdit(\''+p.id+'\')">保存</button>'+
+      '<button class="btn" style="flex:1" onclick="cancelEdit()">キャンセル</button>'+
+    '</div></div>';
+}
+
+function startEdit(id){editingId=id;renderPaymentList();}
+function cancelEdit(){editingId=null;renderPaymentList();}
+
+function toggleEditPart(pid,mid){
+  var p=null;for(var i=0;i<payments.length;i++){if(payments[i].id===pid){p=payments[i];break;}}
+  if(!p)return;
+  var idx=-1;for(var i=0;i<p.participants.length;i++){if(p.participants[i].id===mid){idx=i;break;}}
+  if(idx>=0)p.participants.splice(idx,1);
+  else p.participants.push({id:mid,pct:0});
+  renderPaymentList();
+}
+
+function setEditPct(pid,mid,v){
+  for(var i=0;i<payments.length;i++){
+    if(payments[i].id===pid){for(var j=0;j<payments[i].participants.length;j++){
+      if(payments[i].participants[j].id===mid){payments[i].participants[j].pct=parseFloat(v)||0;return;}
+    }}
+  }
+}
+
+function saveEdit(id){
+  for(var i=0;i<payments.length;i++){
+    if(payments[i].id===id){
+      payments[i].payerId=document.getElementById('edit-payer-'+id).value;
+      payments[i].amount=parseFloat(document.getElementById('edit-amt-'+id).value)||payments[i].amount;
+      payments[i].desc=document.getElementById('edit-desc-'+id).value.trim()||'支払い';
+      break;
+    }
+  }
+  editingId=null;renderPaymentList();updateStats();
+}
+
+function calcSettlement(){
+  var bal={};
+  for(var i=0;i<members.length;i++) bal[members[i].id]=0;
+  for(var i=0;i<payments.length;i++){
+    var p=payments[i];if(bal[p.payerId]===undefined)continue;
+    bal[p.payerId]+=p.amount;
+    var tw=0;for(var j=0;j<p.participants.length;j++) tw+=p.participants[j].pct;
+    if(tw===0)continue;
+    for(var j=0;j<p.participants.length;j++){
+      var x=p.participants[j];if(bal[x.id]!==undefined) bal[x.id]-=(x.pct/tw)*p.amount;
+    }
+  }
+  var creds=[],debts=[];
+  for(var id in bal){
+    var b=bal[id],name='';
+    for(var i=0;i<members.length;i++){if(members[i].id===id){name=members[i].name;break;}}
+    if(b>0.5)creds.push({name:name,amount:b});
+    else if(b<-0.5)debts.push({name:name,amount:-b});
+  }
+  var result=[],c=[],d=[];
+  for(var i=0;i<creds.length;i++) c.push({name:creds[i].name,amount:creds[i].amount});
+  for(var i=0;i<debts.length;i++) d.push({name:debts[i].name,amount:debts[i].amount});
+  var ci=0,di=0;
+  while(ci<c.length&&di<d.length){
+    var t=Math.min(c[ci].amount,d[di].amount);
+    result.push({from:d[di].name,to:c[ci].name,amount:t});
+    c[ci].amount-=t;d[di].amount-=t;
+    if(c[ci].amount<0.5)ci++;if(d[di].amount<0.5)di++;
+  }
+  return result;
+}
+
+function renderResult(){
+  var settlement=calcSettlement();
+  var sc=document.getElementById('summary-card');
+  var sr=document.getElementById('summary-rows');
+  if(members.length>0&&payments.length>0){
+    sc.style.display='block';
+    var html='';
+    for(var i=0;i<members.length;i++){
+      var m=members[i];
+      var paid=0;for(var j=0;j<payments.length;j++){if(payments[j].payerId===m.id)paid+=payments[j].amount;}
+      var burden=0;
+      for(var j=0;j<payments.length;j++){
+        var p=payments[j];var inc=null;
+        for(var k=0;k<p.participants.length;k++){if(p.participants[k].id===m.id){inc=p.participants[k];break;}}
+        if(!inc)continue;
+        var tw=0;for(var k=0;k<p.participants.length;k++) tw+=p.participants[k].pct;
+        if(tw>0)burden+=(inc.pct/tw)*p.amount;
+      }
+      var diff=paid-burden;
+      var diffStr=diff>0.5?'<span class="diff-pos">+¥'+Math.round(diff).toLocaleString()+'</span>':
+        diff<-0.5?'<span class="diff-neg">-¥'+Math.round(-diff).toLocaleString()+'</span>':
+        '<span style="color:var(--text3)">±0</span>';
+      html+='<div class="summary-grid summary-row">'+
+        '<div style="display:flex;align-items:center;gap:6px"><div class="avatar avatar-sm">'+m.name.slice(0,2)+'</div><span style="font-size:12px">'+m.name+'</span></div>'+
+        '<span style="font-size:12px">¥'+Math.round(paid).toLocaleString()+'</span>'+
+        '<span style="font-size:12px">¥'+Math.round(burden).toLocaleString()+'</span>'+
+        diffStr+'</div>';
+    }
+    sr.innerHTML=html;
+  }else{sc.style.display='none';}
+  var sl=document.getElementById('settlement-list');
+  if(settlement.length===0){
+    var icon=members.length<2?'👥':payments.length===0?'💸':'🎉';
+    var msg=members.length<2?'メンバーを2人以上追加してください':payments.length===0?'支払いを追加してください':'精算は不要です';
+    sl.innerHTML='<div class="empty"><div class="empty-icon">'+icon+'</div>'+msg+'</div>';
+  }else{
+    var html='';
+    for(var i=0;i<settlement.length;i++){
+      var s=settlement[i];
+      html+='<div class="settle-row">'+
+        '<div class="settle-num">'+(i+1)+'</div>'+
+        '<span style="font-size:13px;font-weight:600;color:var(--danger)">'+s.from+'</span>'+
+        '<span style="font-size:11px;color:var(--text3)">→</span>'+
+        '<span style="font-size:13px;font-weight:600;color:var(--success)">'+s.to+'</span>'+
+        '<span style="flex:1"></span>'+
+        '<span class="settle-amount">¥'+Math.round(s.amount).toLocaleString()+'</span></div>';
+    }
+    html+='<div style="text-align:center;padding:8px 0;font-size:11px;color:var(--text3)">このやり取りで全員の収支がゼロになります ✓</div>';
+    sl.innerHTML=html;
+  }
+}
+
+function addOptRow(){optRows.push({id:uid(),name:'',paid:'',received:''});renderOptRows();}
+function removeOptRow(id){optRows=optRows.filter(function(r){return r.id!==id;});renderOptRows();renderOptResult();}
+function updateOpt(id,field,v){for(var i=0;i<optRows.length;i++){if(optRows[i].id===id){optRows[i][field]=v;break;}}renderOptResult();}
+
+function renderOptRows(){
+  var el=document.getElementById('opt-rows');var html='';
+  for(var i=0;i<optRows.length;i++){
+    var r=optRows[i];
+    html+='<div class="opt-grid" style="margin-bottom:7px">'+
+      '<input type="text" value="'+r.name+'" placeholder="名前 '+(i+1)+'" oninput="updateOpt(\''+r.id+'\',\'name\',this.value)">'+
+      '<input type="number" value="'+r.paid+'" placeholder="¥" oninput="updateOpt(\''+r.id+'\',\'paid\',this.value)">'+
+      '<input type="number" value="'+r.received+'" placeholder="¥" oninput="updateOpt(\''+r.id+'\',\'received\',this.value)">'+
+      '<button class="btn btn-sm btn-danger" style="padding:0 6px" onclick="removeOptRow(\''+r.id+'\')">×</button>'+
+      '</div>';
+  }
+  el.innerHTML=html;
+}
+
+function renderOptResult(){
+  var people=[];
+  for(var i=0;i<optRows.length;i++){
+    var r=optRows[i];
+    var bal=(parseFloat(r.received)||0)-(parseFloat(r.paid)||0);
+    if(Math.abs(bal)>0.5) people.push({name:r.name.trim()||('人'+(i+1)),balance:bal});
+  }
+  var creds=[],debts=[];
+  for(var i=0;i<people.length;i++){
+    if(people[i].balance>0) creds.push({name:people[i].name,balance:people[i].balance});
+    else debts.push({name:people[i].name,balance:-people[i].balance});
+  }
+  creds.sort(function(a,b){return b.balance-a.balance;});
+  debts.sort(function(a,b){return b.balance-a.balance;});
+  var result=[],ci=0,di=0;
+  while(ci<creds.length&&di<debts.length){
+    var t=Math.min(creds[ci].balance,debts[di].balance);
+    result.push({from:debts[di].name,to:creds[ci].name,amount:t});
+    creds[ci].balance-=t;debts[di].balance-=t;
+    if(creds[ci].balance<0.5)ci++;if(debts[di].balance<0.5)di++;
+  }
+  var el=document.getElementById('opt-result');
+  var badge=document.getElementById('opt-badge');
+  var sb=document.getElementById('sb-opt-count');
+  if(result.length===0){
+    badge.style.display='none';sb.textContent='—';
+    el.innerHTML='<div class="empty"><div class="empty-icon">📊</div>金額を入力すると精算方法が表示されます</div>';
+  }else{
+    badge.style.display='inline-flex';badge.textContent=result.length+'件のやり取り';sb.textContent=result.length+'件';
+    var html='';
+    for(var i=0;i<result.length;i++){
+      var s=result[i];
+      html+='<div class="settle-row">'+
+        '<div class="settle-num">'+(i+1)+'</div>'+
+        '<span style="font-size:13px;font-weight:600;color:var(--danger)">'+s.from+'</span>'+
+        '<span style="font-size:11px;color:var(--text3)">が</span>'+
+        '<span style="font-size:13px;font-weight:600;color:var(--success)">'+s.to+'</span>'+
+        '<span style="font-size:11px;color:var(--text3)">に支払う</span>'+
+        '<span style="flex:1"></span>'+
+        '<span class="settle-amount">¥'+Math.round(s.amount).toLocaleString()+'</span></div>';
+    }
+    html+='<div style="text-align:center;padding:8px 0;font-size:11px;color:var(--text3)">このやり取りで全員の収支がゼロになります ✓</div>';
+    el.innerHTML=html;
+  }
+}
+
+function updateStats(){
+  var total=0;for(var i=0;i<payments.length;i++) total+=payments[i].amount;
+  var settle=calcSettlement();
+  document.getElementById('stat-members').textContent=members.length+'人';
+  document.getElementById('stat-payments').textContent=payments.length+'件';
+  document.getElementById('stat-total').textContent='¥'+total.toLocaleString();
+  document.getElementById('sb-total').textContent='¥'+total.toLocaleString();
+  document.getElementById('sb-members').textContent=members.length+'人';
+  document.getElementById('sb-settle').textContent=settle.length+'件';
+}
+
+function renderAll(){renderMemberList();renderPaymentList();renderPayParticipants();updateStats();if(currentTab==='result')renderResult();}
+renderOptRows();
+</script>
+</body>
+</html>
